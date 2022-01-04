@@ -1,5 +1,6 @@
 import './App.css';
 import React from 'react';
+import _ from 'lodash';
 
 function App() {
   const [tasks, setTasks] = React.useState([
@@ -31,6 +32,17 @@ function App() {
 
   const gcd = (a, b) => (a ? gcd(b % a, a) : b);
   const lcm = (a, b) => (a * b) / gcd(a, b);
+
+  const objDifference = (object, base) => {
+    function changes(object, base) {
+      return _.transform(object, function (result, value, key) {
+        if (!_.isEqual(value, base[key])) {
+          result[key] = _.isObject(value) && _.isObject(base[key]) ? changes(value, base[key]) : value;
+        }
+      });
+    }
+    return changes(object, base);
+  };
 
   const isLLSchedulable = () =>
     tasks.map((x) => x.cTime / x.period).reduce((sum, x) => sum + x) <= tasks.length * (Math.pow(2, 1 / tasks.length) - 1);
@@ -78,7 +90,16 @@ function App() {
   };
 
   const plotIntervals = (intervals) => {
-    console.log(intervals);
+    intervals.forEach((interval, index) => {
+      if (intervals[index + 1]) {
+        interval.tasks.forEach((task, i) => {
+          const difference = objDifference(intervals[index + 1].tasks[i], task);
+          if (Object.keys(difference).length > 0) {
+            console.log('Task ' + i, difference);
+          }
+        });
+      }
+    });
   };
 
   return (
