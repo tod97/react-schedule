@@ -13,7 +13,9 @@ function App() {
   const addTask = () => {
     if (!isNaN(cTime) && !isNaN(period) && !isNaN(deadline) && cTime.length > 0 && period.length > 0 && deadline.length > 0) {
       setTasks([...tasks, { cTime, period, deadline }]);
-      clean();
+      setCTime('');
+      setPeriod('');
+      setDeadline('');
     }
   };
 
@@ -24,16 +26,31 @@ function App() {
     setDeadline('');
   };
 
+  const gcd = (a, b) => (a ? gcd(b % a, a) : b);
+  const lcm = (a, b) => (a * b) / gcd(a, b);
+
+  const isLLSchedulable = () =>
+    tasks.map((x) => x.cTime / x.period).reduce((sum, x) => sum + x) <= tasks.length * (Math.pow(2, 1 / tasks.length) - 1);
+
+  const isHBSchedulable = () => tasks.map((x) => x.cTime / x.period + 1).reduce((prod, x) => prod * x) <= 2;
+
+  const loadEDF = () => {
+    const hyperPeriod = tasks.map((x) => x.period).reduce(lcm);
+    console.log(hyperPeriod);
+    console.log(isLLSchedulable());
+    console.log(isHBSchedulable());
+  };
+
   return (
     <>
       <div>
-        <h1>Aggiungi nuovo task:</h1>
+        <h1>Add new task:</h1>
         <div>
-          <label htmlFor="cTime">Tempo di computazione:</label>
+          <label htmlFor="cTime">Computational Time:</label>
           <input onChange={handleCTime} value={cTime} id="cTime" />
         </div>
         <div>
-          <label htmlFor="period">Periodo:</label>
+          <label htmlFor="period">Period:</label>
           <input onChange={handlePeriod} value={period} id="period" />
         </div>
         <div>
@@ -41,8 +58,8 @@ function App() {
           <input onChange={handleDeadline} value={deadline} id="deadline" />
         </div>
 
-        <button onClick={addTask}>Aggiungi</button>
-        <button onClick={clean}>Pulisci</button>
+        <button onClick={addTask}>Add</button>
+        <button onClick={clean}>Clean</button>
       </div>
       <div>
         {tasks.map((x, index) => (
@@ -50,6 +67,9 @@ function App() {
             Task {index + 1}: C={x.cTime}, T={x.period}, D={x.deadline}
           </p>
         ))}
+      </div>
+      <div>
+        <button onClick={loadEDF}>Earliest Deadline First</button>
       </div>
     </>
   );
