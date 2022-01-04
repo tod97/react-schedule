@@ -37,11 +37,14 @@ function App() {
 
   const isHBSchedulable = () => tasks.map((x) => x.cTime / x.period + 1).reduce((prod, x) => prod * x) <= 2;
 
-  const loadEDF = () => {
+  const EDF = () => {
+    const intervals = loadEDF(JSON.parse(JSON.stringify(tasks)));
+    plotIntervals(intervals);
+  };
+
+  const loadEDF = (tasks) => {
+    const intervals = [{ tasks: JSON.parse(JSON.stringify(tasks)) }];
     const hyperPeriod = tasks.map((x) => x.period).reduce(lcm);
-    console.log(hyperPeriod);
-    console.log(isLLSchedulable());
-    console.log(isHBSchedulable());
 
     Array.from(Array(hyperPeriod).keys()).forEach((index) => {
       tasks.forEach((task) => {
@@ -59,8 +62,6 @@ function App() {
         }
       });
 
-      console.log(index, JSON.parse(JSON.stringify(tasks)));
-
       let currentTaskIndex = -1;
       tasks.forEach((task, i) => {
         if (currentTaskIndex > -1) {
@@ -70,7 +71,14 @@ function App() {
         }
       });
       if (currentTaskIndex > -1) tasks[currentTaskIndex].executed++;
+      intervals.push({ tasks: JSON.parse(JSON.stringify(tasks)) });
     });
+
+    return intervals;
+  };
+
+  const plotIntervals = (intervals) => {
+    console.log(intervals);
   };
 
   return (
@@ -101,7 +109,7 @@ function App() {
         ))}
       </div>
       <div>
-        <button onClick={loadEDF}>Earliest Deadline First</button>
+        <button onClick={EDF}>Earliest Deadline First</button>
       </div>
     </>
   );
