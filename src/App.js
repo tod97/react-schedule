@@ -2,7 +2,10 @@ import './App.css';
 import React from 'react';
 
 function App() {
-  const [tasks, setTasks] = React.useState([]);
+  const [tasks, setTasks] = React.useState([
+    { cTime: 3, period: 6, deadline: 6, done: false, executed: 0 },
+    { cTime: 4, period: 9, deadline: 9, done: false, executed: 0 },
+  ]);
   const [cTime, setCTime] = React.useState('');
   const handleCTime = (event) => setCTime(event.target.value);
   const [period, setPeriod] = React.useState('');
@@ -12,7 +15,7 @@ function App() {
 
   const addTask = () => {
     if (!isNaN(cTime) && !isNaN(period) && !isNaN(deadline) && cTime.length > 0 && period.length > 0 && deadline.length > 0) {
-      setTasks([...tasks, { cTime, period, deadline }]);
+      setTasks([...tasks, { cTime, period, deadline, done: false, executed: 0 }]);
       setCTime('');
       setPeriod('');
       setDeadline('');
@@ -39,6 +42,35 @@ function App() {
     console.log(hyperPeriod);
     console.log(isLLSchedulable());
     console.log(isHBSchedulable());
+
+    Array.from(Array(hyperPeriod).keys()).forEach((index) => {
+      tasks.forEach((task) => {
+        if (task.deadline === index && !task.done) {
+          console.log('Task not completed before deadline');
+        } else {
+          if (task.cTime === task.executed) {
+            task.executed = 0;
+            task.done = true;
+          }
+          if (task.deadline === index) {
+            task.deadline += task.deadline;
+            task.done = false;
+          }
+        }
+      });
+
+      console.log(index, JSON.parse(JSON.stringify(tasks)));
+
+      let currentTaskIndex = -1;
+      tasks.forEach((task, i) => {
+        if (currentTaskIndex > -1) {
+          currentTaskIndex = !task.done && task.deadline - index < tasks[currentTaskIndex].deadline - index ? i : currentTaskIndex;
+        } else {
+          currentTaskIndex = task.done ? -1 : i;
+        }
+      });
+      if (currentTaskIndex > -1) tasks[currentTaskIndex].executed++;
+    });
   };
 
   return (
