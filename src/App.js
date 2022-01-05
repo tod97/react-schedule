@@ -2,6 +2,18 @@ import './App.css';
 import React from 'react';
 import _ from 'lodash';
 
+function Axis(props) {
+  return (
+    <div className="block_container">
+      {Array.from(Array(props.hyperPeriod).keys()).map((x) => (
+        <div className="block_axis" style={{ width: 100 / props.hyperPeriod + '%' }}>
+          {x}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function App() {
   let hyperPeriod = 18;
   const [tasks, setTasks] = React.useState([
@@ -109,27 +121,34 @@ function App() {
     });
     intervals.forEach((interval, index) => {
       if (intervals[index + 1]) {
+        let addExecToIndex = -1;
         interval.tasks.forEach((task, i) => {
           const difference = objDifference(intervals[index + 1].tasks[i], task);
           if (Object.keys(difference).length > 0) {
+            if (difference.deadline) {
+              document.getElementById(`task_${i}`).lastElementChild.classList.add('deadline');
+            }
             if (difference.executed) {
-              const newDiv = document.createElement('div');
-              newDiv.style.background = colors[i];
-              newDiv.style.width = 100 / hyperPeriod + '%';
-              newDiv.style.height = '50px';
-              document.getElementById(`task_${i}`).appendChild(newDiv);
-              tasks.forEach((t, j) => {
-                if (i !== j) {
-                  const otherDiv = document.createElement('div');
-                  otherDiv.style.background = 'white';
-                  otherDiv.style.width = 100 / hyperPeriod + '%';
-                  otherDiv.style.height = '50px';
-                  document.getElementById(`task_${j}`).appendChild(otherDiv);
-                }
-              });
+              addExecToIndex = i;
             }
           }
         });
+        if (addExecToIndex > -1) {
+          const newDiv = document.createElement('div');
+          newDiv.style.background = colors[addExecToIndex];
+          newDiv.style.width = 100 / hyperPeriod + '%';
+          newDiv.style.height = '25px';
+          document.getElementById(`task_${addExecToIndex}`).appendChild(newDiv);
+          tasks.forEach((t, j) => {
+            if (addExecToIndex !== j) {
+              const otherDiv = document.createElement('div');
+              otherDiv.style.background = 'white';
+              otherDiv.style.width = 100 / hyperPeriod + '%';
+              otherDiv.style.height = '50px';
+              document.getElementById(`task_${j}`).appendChild(otherDiv);
+            }
+          });
+        }
       }
     });
   };
@@ -169,13 +188,7 @@ function App() {
           <div>
             <p>T {index + 1}</p>
             <div className="block_container" id={'task_' + index}></div>
-          </div>
-        ))}
-      </div>
-      <div className="block_container">
-        {Array.from(Array(hyperPeriod).keys()).map((x) => (
-          <div className="block_axis" style={{ width: 100 / hyperPeriod + '%' }}>
-            {x}
+            <Axis hyperPeriod={hyperPeriod}></Axis>
           </div>
         ))}
       </div>

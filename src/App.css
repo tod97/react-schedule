@@ -39,20 +39,31 @@
 
 .block_container {
   display: flex;
+  align-items: flex-end;
 }
 
 .block_axis {
   position: relative;
-  margin-top: 30px;
   padding-left: 3px;
   border-top: 1px black solid;
 }
-
 .block_axis::before {
   position: absolute;
   width: 1px;
   height: 10px;
   background: black;
   left: 0;
+  content: '';
+}
+
+.deadline {
+  position: relative;
+}
+.deadline::after {
+  position: absolute;
+  background: blue;
+  width: 3px;
+  height: 100%;
+  right: -2px;
   content: '';
 }
