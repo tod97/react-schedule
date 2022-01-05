@@ -3,6 +3,7 @@ import React from 'react';
 import _ from 'lodash';
 
 function App() {
+  let hyperPeriod = 18;
   const [tasks, setTasks] = React.useState([
     { cTime: 3, period: 6, deadline: 6, done: false, executed: 0 },
     { cTime: 4, period: 9, deadline: 9, done: false, executed: 0 },
@@ -44,19 +45,30 @@ function App() {
     return changes(object, base);
   };
 
+  const randomColor = () => {
+    const rangeSize = 100; // adapt as needed
+    const parts = [
+      Math.floor(Math.random() * 256),
+      Math.floor(Math.random() * rangeSize),
+      Math.floor(Math.random() * rangeSize) + 256 - rangeSize,
+    ].sort((a, b) => Math.random() < 0.5);
+
+    return '#' + parts.map((p) => ('0' + p.toString(16)).substr(-2)).join('');
+  };
+
   const isLLSchedulable = () =>
     tasks.map((x) => x.cTime / x.period).reduce((sum, x) => sum + x) <= tasks.length * (Math.pow(2, 1 / tasks.length) - 1);
 
   const isHBSchedulable = () => tasks.map((x) => x.cTime / x.period + 1).reduce((prod, x) => prod * x) <= 2;
 
   const EDF = () => {
+    hyperPeriod = tasks.map((x) => x.period).reduce(lcm);
     const intervals = loadEDF(JSON.parse(JSON.stringify(tasks)));
     plotIntervals(intervals);
   };
 
   const loadEDF = (tasks) => {
     const intervals = [{ tasks: JSON.parse(JSON.stringify(tasks)) }];
-    const hyperPeriod = tasks.map((x) => x.period).reduce(lcm);
 
     Array.from(Array(hyperPeriod).keys()).forEach((index) => {
       tasks.forEach((task) => {
@@ -90,12 +102,32 @@ function App() {
   };
 
   const plotIntervals = (intervals) => {
+    const colors = [];
+    tasks.forEach((task, index) => {
+      document.getElementById(`task_${index}`).innerHTML = '';
+      colors.push(randomColor());
+    });
     intervals.forEach((interval, index) => {
       if (intervals[index + 1]) {
         interval.tasks.forEach((task, i) => {
           const difference = objDifference(intervals[index + 1].tasks[i], task);
           if (Object.keys(difference).length > 0) {
-            console.log('Task ' + i, difference);
+            if (difference.executed) {
+              const newDiv = document.createElement('div');
+              newDiv.style.background = colors[i];
+              newDiv.style.width = 100 / hyperPeriod + '%';
+              newDiv.style.height = '50px';
+              document.getElementById(`task_${i}`).appendChild(newDiv);
+              tasks.forEach((t, j) => {
+                if (i !== j) {
+                  const otherDiv = document.createElement('div');
+                  otherDiv.style.background = 'white';
+                  otherDiv.style.width = 100 / hyperPeriod + '%';
+                  otherDiv.style.height = '50px';
+                  document.getElementById(`task_${j}`).appendChild(otherDiv);
+                }
+              });
+            }
           }
         });
       }
@@ -131,6 +163,21 @@ function App() {
       </div>
       <div>
         <button onClick={EDF}>Earliest Deadline First</button>
+      </div>
+      <div>
+        {tasks.map((x, index) => (
+          <div>
+            <p>T {index + 1}</p>
+            <div className="block_container" id={'task_' + index}></div>
+          </div>
+        ))}
+      </div>
+      <div className="block_container">
+        {Array.from(Array(hyperPeriod).keys()).map((x) => (
+          <div className="block_axis" style={{ width: 100 / hyperPeriod + '%' }}>
+            {x}
+          </div>
+        ))}
       </div>
     </>
   );

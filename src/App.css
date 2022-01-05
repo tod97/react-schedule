@@ -36,3 +36,23 @@
     transform: rotate(360deg);
   }
 }
+
+.block_container {
+  display: flex;
+}
+
+.block_axis {
+  position: relative;
+  margin-top: 30px;
+  padding-left: 3px;
+  border-top: 1px black solid;
+}
+
+.block_axis::before {
+  position: absolute;
+  width: 1px;
+  height: 10px;
+  background: black;
+  left: 0;
+  content: '';
+}
