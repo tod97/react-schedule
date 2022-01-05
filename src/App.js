@@ -15,7 +15,7 @@ function Axis(props) {
 }
 
 function App() {
-  let hyperPeriod = 18;
+  const [hyperPeriod, setHyperPeriod] = React.useState(0);
   const [tasks, setTasks] = React.useState([]);
   const [cTime, setCTime] = React.useState('');
   const handleCTime = (event) => setCTime(event.target.value);
@@ -26,10 +26,26 @@ function App() {
 
   const addTask = () => {
     if (!isNaN(cTime) && !isNaN(period) && !isNaN(deadline) && cTime.length > 0 && period.length > 0 && deadline.length > 0) {
-      setTasks([...tasks, { cTime: parseInt(cTime), period: parseInt(period), deadline: parseInt(deadline), done: false, executed: 0 }]);
+      const newTasks = [
+        ...tasks,
+        {
+          cTime: parseInt(cTime),
+          period: parseInt(period),
+          deadline: parseInt(deadline),
+          done: false,
+          deadlineUnit: parseInt(deadline),
+          executed: 0,
+        },
+      ];
+      setTasks(newTasks);
       setCTime('');
       setPeriod('');
       setDeadline('');
+      if (newTasks.length === 1) {
+        setHyperPeriod(newTasks[0].period);
+      } else {
+        setHyperPeriod(newTasks.map((x) => x.period).reduce(lcm));
+      }
     }
   };
 
@@ -38,6 +54,7 @@ function App() {
     setCTime('');
     setPeriod('');
     setDeadline('');
+    setHyperPeriod(0);
   };
 
   const gcd = (a, b) => (a ? gcd(b % a, a) : b);
@@ -70,8 +87,7 @@ function App() {
 
   const isHBSchedulable = () => tasks.map((x) => x.cTime / x.period + 1).reduce((prod, x) => prod * x) <= 2;
 
-  const EDF = () => {
-    hyperPeriod = tasks.map((x) => x.period).reduce(lcm);
+  const EDF = async () => {
     const intervals = loadEDF(JSON.parse(JSON.stringify(tasks)));
     plotIntervals(intervals);
   };
@@ -81,7 +97,7 @@ function App() {
 
     Array.from(Array(hyperPeriod).keys()).forEach((index) => {
       tasks.forEach((task) => {
-        if (task.deadline === index && !task.done) {
+        if (task.deadline === index && !task.done && task.cTime !== task.executed) {
           console.log('Task not completed before deadline');
         } else {
           if (task.cTime === task.executed) {
@@ -89,7 +105,7 @@ function App() {
             task.done = true;
           }
           if (task.deadline === index) {
-            task.deadline += task.deadline;
+            task.deadline += task.deadlineUnit;
             task.done = false;
           }
         }
@@ -132,9 +148,9 @@ function App() {
         });
         if (addExecToIndex > -1) {
           const newDiv = document.createElement('div');
-          newDiv.style.background = colors[addExecToIndex];
+          newDiv.style.background = 'linear-gradient(180deg, white 50%, ' + colors[addExecToIndex] + ' 50%)';
           newDiv.style.width = 100 / hyperPeriod + '%';
-          newDiv.style.height = '25px';
+          newDiv.style.height = '50px';
           document.getElementById(`task_${addExecToIndex}`).appendChild(newDiv);
           tasks.forEach((t, j) => {
             if (addExecToIndex !== j) {
@@ -144,6 +160,14 @@ function App() {
               otherDiv.style.height = '50px';
               document.getElementById(`task_${j}`).appendChild(otherDiv);
             }
+          });
+        } else {
+          tasks.forEach((t, j) => {
+            const otherDiv = document.createElement('div');
+            otherDiv.style.background = 'white';
+            otherDiv.style.width = 100 / hyperPeriod + '%';
+            otherDiv.style.height = '50px';
+            document.getElementById(`task_${j}`).appendChild(otherDiv);
           });
         }
       }
