@@ -16,10 +16,7 @@ function Axis(props) {
 
 function App() {
   let hyperPeriod = 18;
-  const [tasks, setTasks] = React.useState([
-    { cTime: 3, period: 6, deadline: 6, done: false, executed: 0 },
-    { cTime: 4, period: 9, deadline: 9, done: false, executed: 0 },
-  ]);
+  const [tasks, setTasks] = React.useState([]);
   const [cTime, setCTime] = React.useState('');
   const handleCTime = (event) => setCTime(event.target.value);
   const [period, setPeriod] = React.useState('');
@@ -29,7 +26,7 @@ function App() {
 
   const addTask = () => {
     if (!isNaN(cTime) && !isNaN(period) && !isNaN(deadline) && cTime.length > 0 && period.length > 0 && deadline.length > 0) {
-      setTasks([...tasks, { cTime, period, deadline, done: false, executed: 0 }]);
+      setTasks([...tasks, { cTime: parseInt(cTime), period: parseInt(period), deadline: parseInt(deadline), done: false, executed: 0 }]);
       setCTime('');
       setPeriod('');
       setDeadline('');
@@ -159,15 +156,15 @@ function App() {
         <h1>Add new task:</h1>
         <div>
           <label htmlFor="cTime">Computational Time:</label>
-          <input onChange={handleCTime} value={cTime} id="cTime" />
+          <input type="number" onChange={handleCTime} value={cTime} id="cTime" />
         </div>
         <div>
           <label htmlFor="period">Period:</label>
-          <input onChange={handlePeriod} value={period} id="period" />
+          <input type="number" onChange={handlePeriod} value={period} id="period" />
         </div>
         <div>
           <label htmlFor="deadline">Deadline:</label>
-          <input onChange={handleDeadline} value={deadline} id="deadline" />
+          <input type="number" onChange={handleDeadline} value={deadline} id="deadline" />
         </div>
 
         <button onClick={addTask}>Add</button>
