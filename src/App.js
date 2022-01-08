@@ -24,6 +24,12 @@ function App() {
   const [deadline, setDeadline] = React.useState('');
   const handleDeadline = (event) => setDeadline(event.target.value);
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      addTask();
+    }
+  };
+
   const addTask = () => {
     if (!isNaN(cTime) && !isNaN(period) && !isNaN(deadline) && cTime.length > 0 && period.length > 0 && deadline.length > 0) {
       const newTasks = [
@@ -175,45 +181,64 @@ function App() {
   };
 
   return (
-    <>
-      <div>
-        <h1>Add new task:</h1>
-        <div>
-          <label htmlFor="cTime">Computational Time:</label>
-          <input type="number" onChange={handleCTime} value={cTime} id="cTime" />
+    <div>
+      <div className="m-3">
+        <h1 className="mb-3">Scheduling</h1>
+        <div className="input-group mb-3">
+          <div className="input-group-prepend">
+            <span htmlFor="cTime" className="input-group-text" id="basic-addon3">
+              Computational Time:
+            </span>
+          </div>
+          <input type="number" className="form-control" onChange={handleCTime} value={cTime} id="cTime" />
         </div>
-        <div>
-          <label htmlFor="period">Period:</label>
-          <input type="number" onChange={handlePeriod} value={period} id="period" />
+        <div className="input-group mb-3">
+          <div className="input-group-prepend">
+            <span htmlFor="period" className="input-group-text" id="basic-addon3">
+              Period:
+            </span>
+          </div>
+          <input type="number" className="form-control" onChange={handlePeriod} value={period} id="period" />
         </div>
-        <div>
-          <label htmlFor="deadline">Deadline:</label>
-          <input type="number" onChange={handleDeadline} value={deadline} id="deadline" />
+        <div className="input-group mb-3">
+          <div className="input-group-prepend">
+            <span htmlFor="deadline" className="input-group-text" id="basic-addon3">
+              Deadline:
+            </span>
+          </div>
+          <input type="number" className="form-control" onKeyUp={handleKeyDown} onChange={handleDeadline} value={deadline} id="deadline" />
         </div>
-
-        <button onClick={addTask}>Add</button>
-        <button onClick={clean}>Clean</button>
       </div>
-      <div>
+      <div className="mt-3 d-flex justify-content-around">
+        <button className="btn btn-danger flex-grow-1 m-3" onClick={clean}>
+          Clean
+        </button>
+        <button className="btn btn-primary flex-grow-1 m-3" onClick={addTask}>
+          Add
+        </button>
+      </div>
+      <div className="d-flex m-3">
+        <button className="btn btn-primary flex-grow-1" onClick={EDF}>
+          Earliest Deadline First
+        </button>
+      </div>
+      <div className="m-3">
         {tasks.map((x, index) => (
           <p>
             Task {index + 1}: C={x.cTime}, T={x.period}, D={x.deadline}
           </p>
         ))}
       </div>
-      <div>
-        <button onClick={EDF}>Earliest Deadline First</button>
-      </div>
-      <div>
+      <div className="m-3">
         {tasks.map((x, index) => (
           <div>
-            <p>T {index + 1}</p>
+            <p className="mt-3 mb-0">T {index + 1}</p>
             <div className="block_container" id={'task_' + index}></div>
             <Axis hyperPeriod={hyperPeriod}></Axis>
           </div>
         ))}
       </div>
-    </>
+    </div>
   );
 }
 
