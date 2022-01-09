@@ -102,7 +102,6 @@ function App() {
     tasks.forEach((task, index) => {
       task.deadline = task.period;
       task.deadlineUnit = task.period;
-      task.originalOrder = index;
     });
     const intervals = [{ tasks: JSON.parse(JSON.stringify(tasks)) }];
 
@@ -126,6 +125,44 @@ function App() {
       tasks.forEach((task, i) => {
         if (currentTaskIndex > -1) {
           currentTaskIndex = !task.done && task.period < tasks[currentTaskIndex].period ? i : currentTaskIndex;
+        } else {
+          currentTaskIndex = task.done ? -1 : i;
+        }
+      });
+      if (currentTaskIndex > -1) tasks[currentTaskIndex].executed++;
+      intervals.push({ tasks: JSON.parse(JSON.stringify(tasks)) });
+    });
+    return intervals;
+  };
+
+  const DM = () => {
+    const intervals = loadDM(JSON.parse(JSON.stringify(tasks)));
+    plotIntervals(intervals);
+  };
+
+  const loadDM = (tasks) => {
+    const intervals = [{ tasks: JSON.parse(JSON.stringify(tasks)) }];
+
+    Array.from(Array(hyperPeriod).keys()).forEach((index) => {
+      tasks.forEach((task) => {
+        if (task.deadline === index && !task.done && task.cTime !== task.executed) {
+          console.log('Task not completed before period');
+        } else {
+          if (task.cTime === task.executed) {
+            task.executed = 0;
+            task.done = true;
+          }
+          if (task.deadline === index) {
+            task.deadline += task.deadlineUnit;
+            task.done = false;
+          }
+        }
+      });
+
+      let currentTaskIndex = -1;
+      tasks.forEach((task, i) => {
+        if (currentTaskIndex > -1) {
+          currentTaskIndex = !task.done && task.deadlineUnit < tasks[currentTaskIndex].deadlineUnit ? i : currentTaskIndex;
         } else {
           currentTaskIndex = task.done ? -1 : i;
         }
@@ -261,9 +298,12 @@ function App() {
           Add
         </button>
       </div>
-      <div className="d-flex">
+      <div className="d-flex justify-content-around">
         <button className="btn btn-primary m-3" onClick={RM}>
           Rate Monotonic
+        </button>
+        <button className="btn btn-primary m-3" onClick={DM}>
+          Deadline Monotonic
         </button>
         <button className="btn btn-primary m-3" onClick={EDF}>
           Earliest Deadline First
