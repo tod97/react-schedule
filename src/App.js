@@ -99,27 +99,38 @@ function App() {
   };
 
   const loadRM = (tasks) => {
-    tasks = tasks.sort((a, b) => a.period > b.period);
+    tasks.forEach((task, index) => {
+      task.deadline = task.period;
+      task.deadlineUnit = task.period;
+      task.originalOrder = index;
+    });
     const intervals = [{ tasks: JSON.parse(JSON.stringify(tasks)) }];
 
     Array.from(Array(hyperPeriod).keys()).forEach((index) => {
-      let blockExecuted = false;
       tasks.forEach((task) => {
-        if (task.deadline === index) {
-          task.deadline += task.deadlineUnit;
-          task.executed = 0;
-          task.done = false;
-        }
-        if (!blockExecuted) {
-          if (!task.done && task.executed < task.cTime) {
-            blockExecuted = true;
-            task.executed++;
-            if (task.executed === task.cTime) {
-              task.done = true;
-            }
+        if (task.deadline === index && !task.done && task.cTime !== task.executed) {
+          console.log('Task not completed before period');
+        } else {
+          if (task.cTime === task.executed) {
+            task.executed = 0;
+            task.done = true;
+          }
+          if (task.deadline === index) {
+            task.deadline += task.deadlineUnit;
+            task.done = false;
           }
         }
       });
+
+      let currentTaskIndex = -1;
+      tasks.forEach((task, i) => {
+        if (currentTaskIndex > -1) {
+          currentTaskIndex = !task.done && task.period < tasks[currentTaskIndex].period ? i : currentTaskIndex;
+        } else {
+          currentTaskIndex = task.done ? -1 : i;
+        }
+      });
+      if (currentTaskIndex > -1) tasks[currentTaskIndex].executed++;
       intervals.push({ tasks: JSON.parse(JSON.stringify(tasks)) });
     });
     return intervals;
