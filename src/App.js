@@ -5,8 +5,8 @@ import _ from 'lodash';
 function Axis(props) {
   return (
     <div className="block_container">
-      {Array.from(Array(props.hyperPeriod).keys()).map((x) => (
-        <div className="block_axis" style={{ width: 100 / props.hyperPeriod + '%' }}>
+      {Array.from(Array(props.hyperPeriod).keys()).map((x, index) => (
+        <div key={index} className="block_axis" style={{ width: 100 / props.hyperPeriod + '%' }}>
           {x}
         </div>
       ))}
@@ -78,7 +78,7 @@ function App() {
   };
 
   const randomColor = () => {
-    const rangeSize = 100; // adapt as needed
+    const rangeSize = 100;
     const parts = [
       Math.floor(Math.random() * 256),
       Math.floor(Math.random() * rangeSize),
@@ -93,7 +93,39 @@ function App() {
 
   const isHBSchedulable = () => tasks.map((x) => x.cTime / x.period + 1).reduce((prod, x) => prod * x) <= 2;
 
-  const EDF = async () => {
+  const RM = () => {
+    const intervals = loadRM(JSON.parse(JSON.stringify(tasks)));
+    plotIntervals(intervals);
+  };
+
+  const loadRM = (tasks) => {
+    tasks = tasks.sort((a, b) => a.period > b.period);
+    const intervals = [{ tasks: JSON.parse(JSON.stringify(tasks)) }];
+
+    Array.from(Array(hyperPeriod).keys()).forEach((index) => {
+      let blockExecuted = false;
+      tasks.forEach((task) => {
+        if (task.deadline === index) {
+          task.deadline += task.deadlineUnit;
+          task.executed = 0;
+          task.done = false;
+        }
+        if (!blockExecuted) {
+          if (!task.done && task.executed < task.cTime) {
+            blockExecuted = true;
+            task.executed++;
+            if (task.executed === task.cTime) {
+              task.done = true;
+            }
+          }
+        }
+      });
+      intervals.push({ tasks: JSON.parse(JSON.stringify(tasks)) });
+    });
+    return intervals;
+  };
+
+  const EDF = () => {
     const intervals = loadEDF(JSON.parse(JSON.stringify(tasks)));
     plotIntervals(intervals);
   };
@@ -143,6 +175,7 @@ function App() {
         let addExecToIndex = -1;
         interval.tasks.forEach((task, i) => {
           const difference = objDifference(intervals[index + 1].tasks[i], task);
+          //console.log(index, intervals[index + 1].tasks[i], task, difference);
           if (Object.keys(difference).length > 0) {
             if (difference.deadline) {
               document.getElementById(`task_${i}`).lastElementChild.classList.add('deadline');
@@ -217,21 +250,24 @@ function App() {
           Add
         </button>
       </div>
-      <div className="d-flex m-3">
-        <button className="btn btn-primary flex-grow-1" onClick={EDF}>
+      <div className="d-flex">
+        <button className="btn btn-primary m-3" onClick={RM}>
+          Rate Monotonic
+        </button>
+        <button className="btn btn-primary m-3" onClick={EDF}>
           Earliest Deadline First
         </button>
       </div>
       <div className="m-3">
         {tasks.map((x, index) => (
-          <p>
+          <p key={index}>
             Task {index + 1}: C={x.cTime}, T={x.period}, D={x.deadline}
           </p>
         ))}
       </div>
       <div className="m-3">
         {tasks.map((x, index) => (
-          <div>
+          <div key={index}>
             <p className="mt-3 mb-0">T {index + 1}</p>
             <div className="block_container" id={'task_' + index}></div>
             <Axis hyperPeriod={hyperPeriod}></Axis>
