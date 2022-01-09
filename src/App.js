@@ -39,6 +39,7 @@ function App() {
           period: parseInt(period),
           deadline: parseInt(deadline),
           done: false,
+          currentPeriod: 0,
           deadlineUnit: parseInt(deadline),
           executed: 0,
         },
@@ -52,6 +53,7 @@ function App() {
       } else {
         setHyperPeriod(newTasks.map((x) => x.period).reduce(lcm));
       }
+      document.getElementById('cTime').focus();
     }
   };
 
@@ -114,9 +116,9 @@ function App() {
             task.executed = 0;
             task.done = true;
           }
-          if (task.deadline === index) {
-            task.deadline += task.deadlineUnit;
+          if ((task.currentPeriod + 1) * task.period === index) {
             task.done = false;
+            task.currentPeriod++;
           }
         }
       });
@@ -153,8 +155,11 @@ function App() {
             task.done = true;
           }
           if (task.deadline === index) {
-            task.deadline += task.deadlineUnit;
+            task.deadline = (task.currentPeriod + 1) * task.period + task.deadlineUnit;
+          }
+          if ((task.currentPeriod + 1) * task.period === index) {
             task.done = false;
+            task.currentPeriod++;
           }
         }
       });
@@ -191,8 +196,11 @@ function App() {
             task.done = true;
           }
           if (task.deadline === index) {
-            task.deadline += task.deadlineUnit;
+            task.deadline = (task.currentPeriod + 1) * task.period + task.deadlineUnit;
+          }
+          if ((task.currentPeriod + 1) * task.period === index) {
             task.done = false;
+            task.currentPeriod++;
           }
         }
       });
@@ -224,9 +232,13 @@ function App() {
         interval.tasks.forEach((task, i) => {
           const difference = objDifference(intervals[index + 1].tasks[i], task);
           //console.log(index, intervals[index + 1].tasks[i], task, difference);
+          //console.log(index, difference);
           if (Object.keys(difference).length > 0) {
             if (difference.deadline) {
               document.getElementById(`task_${i}`).lastElementChild.classList.add('deadline');
+            }
+            if (difference.currentPeriod) {
+              document.getElementById(`task_${i}`).lastElementChild.classList.add('period');
             }
             if (difference.executed) {
               addExecToIndex = i;

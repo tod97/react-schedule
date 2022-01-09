@@ -56,14 +56,37 @@
   content: '';
 }
 
-.deadline {
+.period {
   position: relative;
 }
-.deadline::after {
+.period::after {
   position: absolute;
   background: blue;
   width: 3px;
   height: 100%;
   right: -2px;
+  content: '';
+}
+
+.deadline {
+  position: relative;
+}
+.deadline::after {
+  position: absolute;
+  background: red;
+  width: 3px;
+  height: 100%;
+  right: -2px;
+  content: '';
+}
+.deadline::before {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid red;
+  left: 11px;
+  bottom: -1px;
   content: '';
 }
