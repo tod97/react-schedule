@@ -57,6 +57,10 @@ function App() {
     }
   };
 
+  const removeTask = (index) => {
+    setTasks(tasks.filter((x, i) => i !== index));
+  };
+
   const clean = () => {
     setTasks([]);
     setCTime('');
@@ -108,9 +112,9 @@ function App() {
     const intervals = [{ tasks: JSON.parse(JSON.stringify(tasks)) }];
 
     Array.from(Array(hyperPeriod).keys()).forEach((index) => {
-      tasks.forEach((task) => {
-        if (task.deadline === index && !task.done && task.cTime !== task.executed) {
-          console.log('Task not completed before period');
+      tasks.forEach((task, i) => {
+        if ((task.currentPeriod + 1) * task.period === index && !task.done && task.cTime !== task.executed) {
+          alert(`Task ${i} not completed before period`);
         } else {
           if (task.cTime === task.executed) {
             task.executed = 0;
@@ -146,9 +150,9 @@ function App() {
     const intervals = [{ tasks: JSON.parse(JSON.stringify(tasks)) }];
 
     Array.from(Array(hyperPeriod).keys()).forEach((index) => {
-      tasks.forEach((task) => {
+      tasks.forEach((task, i) => {
         if (task.deadline === index && !task.done && task.cTime !== task.executed) {
-          console.log('Task not completed before period');
+          alert(`Task ${i} not completed before deadline`);
         } else {
           if (task.cTime === task.executed) {
             task.executed = 0;
@@ -187,9 +191,9 @@ function App() {
     const intervals = [{ tasks: JSON.parse(JSON.stringify(tasks)) }];
 
     Array.from(Array(hyperPeriod).keys()).forEach((index) => {
-      tasks.forEach((task) => {
+      tasks.forEach((task, i) => {
         if (task.deadline === index && !task.done && task.cTime !== task.executed) {
-          console.log('Task not completed before deadline');
+          alert(`Task ${i} not completed before deadline`);
         } else {
           if (task.cTime === task.executed) {
             task.executed = 0;
@@ -231,8 +235,6 @@ function App() {
         let addExecToIndex = -1;
         interval.tasks.forEach((task, i) => {
           const difference = objDifference(intervals[index + 1].tasks[i], task);
-          //console.log(index, intervals[index + 1].tasks[i], task, difference);
-          //console.log(index, difference);
           if (Object.keys(difference).length > 0) {
             if (difference.deadline) {
               document.getElementById(`task_${i}`).lastElementChild.classList.add('deadline');
@@ -323,12 +325,18 @@ function App() {
       </div>
       <div className="m-3">
         {tasks.map((x, index) => (
-          <p key={index}>
-            Task {index + 1}: C={x.cTime}, T={x.period}, D={x.deadline}
-          </p>
+          <div key={index} className="d-flex align-items-center justify-content-between mb-3">
+            <h4>
+              <b>Task {index + 1}:</b> C={x.cTime}, T={x.period}, D={x.deadline}
+            </h4>
+            <button className="btn btn-danger" onClick={() => removeTask(index)}>
+              Remove
+            </button>
+          </div>
         ))}
       </div>
       <div className="m-3">
+        <h2 className="mb-3">Results</h2>
         {tasks.map((x, index) => (
           <div key={index}>
             <p className="mt-3 mb-0">T {index + 1}</p>
