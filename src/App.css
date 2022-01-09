@@ -86,7 +86,7 @@
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
   border-top: 10px solid red;
-  left: 11px;
+  right: -10px;
   bottom: -1px;
   content: '';
 }
